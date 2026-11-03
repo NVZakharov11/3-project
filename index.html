@@ -68,6 +68,9 @@ thead th{background:var(--soft);font-weight:600;font-size:12px;color:var(--muted
 tbody tr:last-child td{border-bottom:0}
 tbody tr:hover td{background:color-mix(in srgb,var(--soft) 55%,var(--surface))}
 td.wrapc,th.wrapc{white-space:normal}
+#tA,#tV,#tT{table-layout:fixed;font-size:12.5px}#tA th,#tA td,#tV th,#tV td,#tT th,#tT td{padding:7px 5px;white-space:normal;overflow-wrap:break-word}#tA th:first-child,#tV th:first-child,#tT th:first-child,#tA td:first-child,#tV td:first-child,#tT td:first-child{text-align:left;width:7.5%;padding-left:10px}#tA thead th,#tV thead th,#tT thead th{vertical-align:bottom;line-height:1.25}
+@media (max-width:1150px){#tA,#tV,#tT{font-size:11px}#tA th,#tA td,#tV th,#tV td,#tT th,#tT td{padding:6px 3px}}
+@media (max-width:760px){#tA,#tV,#tT{table-layout:auto;font-size:12.5px}#tA th,#tA td,#tV th,#tV td,#tT th,#tT td{white-space:nowrap;padding:7px 10px}}
 .nt{display:block;font-size:11.5px;font-weight:400;color:var(--muted);line-height:1.3}
 .chk{display:inline-flex;align-items:center;gap:8px;font:600 13px var(--f-body);margin:2px 0 10px;cursor:pointer}.chk input{width:16px;height:16px;accent-color:var(--leaf)}
 #cmpT{table-layout:fixed}#cmpT th,#cmpT td{white-space:normal;vertical-align:top;overflow-wrap:break-word;hyphens:auto}#cmpT th:first-child,#cmpT td:first-child{text-align:left;width:26%}#cmpT td:not(:first-child),#cmpT th:not(:first-child){width:24.67%}
@@ -386,12 +389,13 @@ function cmpTab(){
   row('IRR проекта',`<b>${pct(a.irr)}</b>`,`<b>${pct(v.irr)}</b>`,`<b>${pct(t.irr)}</b>`)+
   row('NPV при 12%, млн ₽',`<b class="${sg(a.npv)}">${fmt(a.npv,1)}</b>`,`<b class="${sg(v.npv)}">${fmt(v.npv,1)}</b>`,`<b class="${sg(t.npv)}">${fmt(t.npv,1)}</b>`)+
   row('Простая окупаемость',pay(a),pay(v),pay(t,` (${T.y0+t.pay-1})`))+
-  row('Пик финансирования, млн ₽',`${fmt(a.peak,0)} (год ${a.peakY})`,`${fmt(v.peak,0)} (год ${v.peakY})`,`${fmt(t.peak,0)} (год ${t.peakY})`,'Максимальная потребность в заёмных средствах: минимум накопленного FCF; проценты не учитываются')+
+  (FIN?row('Пик финансирования с процентами, млн ₽',`${fmt(a.peakI,0)} (год ${a.peakIY})`,`${fmt(v.peakI,0)} (год ${v.peakIY})`,`${fmt(t.peakI,0)} (год ${t.peakIY})`,'Максимальная потребность в заёмных средствах: минимум накопленного денежного потока после уплаты процентов. У тюльпанов по схеме модели (проценты на все вложения) было бы 231,6; без процентов 164'):row('Пик финансирования (без процентов), млн ₽',`${fmt(a.peak,0)} (год ${a.peakY})`,`${fmt(v.peak,0)} (год ${v.peakY})`,`${fmt(t.peak,0)} (год ${t.peakY})`,'Максимальная потребность в заёмных средствах: минимум накопленного FCF; проценты не учитываются'))+
   row('Накопленный FCF к 8-му году, млн ₽',fmt(c8(A),0),fmt(c8(V),0),fmt(c8(T),0),'Одинаковый горизонт для сравнения. Тюльпаны: выручка − посадка − ФОТ − капзатраты, до амортизации и процентов; в модели тюльпанов с ними накопленный баланс 1 468 млн ₽')+
   row('Накопленный FCF за весь горизонт, млн ₽',`${fmt(a.cumEnd,0)} (15 лет)`,`${fmt(v.cumEnd,0)} (20 лет)`,`${fmt(t.cumEnd,0)} (8 лет)`)+
-  row('Накопленный FCF ÷ пик финансирования',fmt(a.cumEnd/a.peak,1)+' ×',fmt(v.cumEnd/v.peak,1)+' ×',fmt(t.cumEnd/t.peak,1)+' ×','Сколько раз максимум заёмных средств возвращается за горизонт')+
+  row('Накопленный FCF ÷ пик финансирования',(FIN?fmt(a.cumCEnd/a.peakI,1):fmt(a.cumEnd/a.peak,1))+' ×',(FIN?fmt(v.cumCEnd/v.peakI,1):fmt(v.cumEnd/v.peak,1))+' ×',(FIN?fmt(t.cumCEnd/t.peakI,1):fmt(t.cumEnd/t.peak,1))+' ×','Сколько раз максимум заёмных средств возвращается за горизонт')+
   (FIN?row('Амортизация за весь горизонт, млн ₽',fmt(a.totDep,0),fmt(v.totDep,0),fmt(t.totDep,1),'Линейно за 10 лет с года вложения, от чистого CAPEX (за вычетом господдержки)')+
   row('Проценты за весь горизонт, млн ₽',fmt(a.totIntr,0),fmt(v.totIntr,0),fmt(t.totIntr,1),'На непогашенный долг: 5% в пределах льготного кредита и 15% сверх него (у тюльпанов всё под 15%)')+
+  row('Общие затраты за весь горизонт (OPEX + амортизация + проценты), млн ₽',fmt(opA+a.totDep+a.totIntr,0),fmt(opV+v.totDep+v.totIntr,0),fmt(opT+t.totDep+t.totIntr,1),'Аналог строки «Общие затраты» в модели тюльпанов. В модели проценты на все вложения (561,1), здесь на непогашенный долг')+
   row('Баланс на плато: EBITDA − амортизация − проценты, млн ₽',fmt(aL.bal,1),fmt(vL.bal,1),`${fmt(T33.bal,1)} (2033)`)+
   row('Накопленный баланс за весь горизонт, млн ₽',fmt(a.cumBalEnd,0),fmt(v.cumBalEnd,0),fmt(t.cumBalEnd,0),'Накопленная EBITDA минус амортизация и проценты')+
   row('IRR после процентов',`<b>${pct(a.irrI)}</b>`,`<b>${pct(v.irrI)}</b>`,`<b>${pct(t.irrI)}</b>`,'IRR потока после уплаты процентов (FCF минус проценты). Проценты здесь учтены и в потоке, и в ставке дисконтирования, поэтому это консервативная оценка')+
@@ -399,7 +403,7 @@ function cmpTab(){
   row('Окупаемость после процентов',pay({pay:a.payI}),pay({pay:v.payI}),pay({pay:t.payI},t.payI?` (${T.y0+t.payI-1})`:''),'Первый год, когда накопленный поток после процентов становится неотрицательным')+
   row('Накопленный FCF после процентов к 8-му году, млн ₽',fmt(a.cumC8,0),fmt(v.cumC8,0),fmt(t.cumC8,0),'Накопленный FCF минус проценты')+
   row('Накопленный FCF после процентов за весь горизонт, млн ₽',fmt(a.cumCEnd,0),fmt(v.cumCEnd,0),fmt(t.cumCEnd,0))+
-  row('Пик финансирования с процентами, млн ₽',`${fmt(a.peakI,0)} (год ${a.peakIY})`,`${fmt(v.peakI,0)} (год ${v.peakIY})`,`${fmt(t.peakI,0)} (год ${t.peakIY})`,'Минимум накопленного денежного потока после уплаты процентов'):'');
+  '':'');
  $('#cmpT').innerHTML=h+'</tbody>';
  $('#cmpNote').innerHTML='Проекты разного масштаба и горизонта, поэтому в таблице есть показатели на гектар, накопленный FCF к одному и тому же 8-му году и отношение накопленного FCF к пику финансирования. У тюльпанов показатели «на плато» взяты за 2033 год: плато там нет, сезон последний и продаётся весь 1-й разбор; для полноты даны и суммы за весь горизонт. Все проекты считаются на заёмных средствах: льготный кредит 5% и остальное под 15% (у тюльпанов всё под 15%). Галочка добавляет полную себестоимость, амортизацию, проценты, баланс и показатели после процентов (IRR, NPV, окупаемость, накопленный FCF); основные NPV и IRR от неё не зависят. Поток яблок восстановлен по итогам презентации проекта 100 га.'+(FIN?' Справка: по схеме модели тюльпанов (проценты на все вложения нарастающим итогом, без погашения) у тюльпанов проценты '+fmt(tmod.totIntr,1)+' млн ₽, IRR после процентов '+pct(tmod.irrI)+', полная себестоимость '+fmt((tmod.rows[7].opex+tmod.rows[7].dep+tmod.rows[7].intr)/T.ind.costDen,2)+' ₽/шт.':'');
  const xs=Array.from({length:20},(_,i)=>i+1);
@@ -463,6 +467,7 @@ function projShell(D){const k=D.key;
   <div class="panel"><h3>CAPEX создания, млн ₽</h3><div id="x${k}" style="margin-top:6px"></div></div>
   <div class="panel"><h3>${D.subItems.length?'Господдержка, млн ₽':'Господдержка'}</h3><div id="u${k}" style="margin-top:6px"></div></div>
  </div>
+${D.key==='T'?`<div class="panel"><header><h3>Сверка с моделью тюльпанов</h3></header><div class="tw"><table id="rc"></table></div><p class="note" id="rcn"></p></div>`:''}
  <div class="grid2">
   <div class="panel"><h3>${D.opexTitle||'OPEX на плато, млн ₽ в год'}</h3><div id="p${k}" style="margin-top:6px"></div>
    <h3 style="margin-top:16px">${D.finTitle||'Финансирование льготным кредитом'}</h3><div id="e${k}" style="margin-top:6px"></div></div>
@@ -496,7 +501,7 @@ function projLive(D){const k=D.key,s=ST[k],c=calc(D,s);
   [`IRR проекта`,pct(c.irr),c.irr==null?'не определён':c.irr>=s.r?`выше ставки ${rate}%`:`ниже ставки ${rate}%`,c.irr!=null&&c.irr>=s.r?'pos':'neg'],
   [`NPV при ${rate}%`,fmt(c.npv,1)+' млн ₽',dif?`база ${fmt(base.npv,1)}`:'денежный поток дисконтирован по концу года',sg(c.npv)],
   ['Простая окупаемость',c.pay?c.pay+'-й год':'нет',c.pay?`горизонт ${c.n} лет`:`не окупается за ${c.n} лет`,c.pay?'':'neg'],
-  ['Пик финансирования',fmt(c.peak,0)+' млн ₽',`год ${c.peakY}, минимум накопленного FCF`,''],
+  FIN?['Пик финансирования',fmt(c.peakI,0)+' млн ₽',`год ${c.peakIY}, с процентами`,'']:['Пик финансирования',fmt(c.peak,0)+' млн ₽',`год ${c.peakY}, без процентов`,''],
   [(D.plat||['EBITDA на плато'])[0],fmt(c.plateau,1)+' млн ₽',(D.plat||[0,'в год при полном плодоношении'])[1],sg(c.plateau)],
   ['Накопленный FCF',fmt(c.cumEnd,0)+' млн ₽',`за ${c.n} лет`,sg(c.cumEnd)]
  ].map(i=>`<div class="kpi ${i[3]}"><small>${i[0]}</small><strong class="num">${kv(i[1])}</strong><em>${i[2]}</em></div>`).join('');
@@ -506,10 +511,28 @@ function projLive(D){const k=D.key,s=ST[k],c=calc(D,s);
  {const fi=Object.assign({},D.fin,{l1:D.fin.l1*s.lf}),Fr=Math.round(s.fr*100),netC=D.capexCreate*s.cf-D.subTotal*s.sf,ru=isT?'₽/шт.':'₽/кг';
   let fr=D.fin.l1>0?[['Льготный кредит',`${fmt(fi.l1,1)} млн ₽, ${Math.round(fi.r1*100)}%${fi.term?', '+fi.term+' лет':''}`],[`Собственные средства (заём под ${Fr}%)`,`${fmt(Math.max(0,netC-fi.l1),1)} млн ₽ (чистый CAPEX ${fmt(netC,1)})`]]:[[`Все вложения за счёт заёмных средств под ${Fr}%`,`${fmt(netC,1)} млн ₽ CAPEX`]];
   fr=fr.concat(D.finRows);
-  if(FIN)fr=fr.concat([[`Амортизация за горизонт, млн ₽ (${fi.years} лет)`,fmt(c.totDep,1)],['Проценты за горизонт, млн ₽',fmt(c.totIntr,1)],['Баланс на плато: EBITDA − амортизация − проценты, млн ₽',fmt(rL.bal,1)],['Накопленный баланс за горизонт, млн ₽',fmt(c.cumBalEnd,1)],[`IRR / NPV после процентов (${Math.round(s.r*100)}%)`,`${pct(c.irrI)} / ${fmt(c.npvI,1)}`],['Накопленный FCF после процентов, млн ₽',fmt(c.cumCEnd,0)],['Пик финансирования с процентами, млн ₽',`${fmt(c.peakI,0)} (год ${c.peakIY})`],[`Себестоимость полная, ${ru}`,fmt(full,isT?2:1)]]);
+  if(FIN)fr=fr.concat([[`Амортизация за горизонт, млн ₽ (${fi.years} лет)`,fmt(c.totDep,1)],['Проценты за горизонт, млн ₽',fmt(c.totIntr,1)],['Баланс на плато: EBITDA − амортизация − проценты, млн ₽',fmt(rL.bal,1)],['Накопленный баланс за горизонт, млн ₽',fmt(c.cumBalEnd,1)],[`IRR / NPV после процентов (${Math.round(s.r*100)}%)`,`${pct(c.irrI)} / ${fmt(c.npvI,1)}`],[`Накопленный FCF к 8-му году, млн ₽`,fmt(c.rows[Math.min(7,c.n-1)].cum,0)],[`Накопленный FCF после процентов к 8-му году, млн ₽`,fmt(c.cumC8,0)],[`Накопленный FCF после процентов за ${c.n} лет, млн ₽`,fmt(c.cumCEnd,0)],['Пик финансирования с процентами, млн ₽',`${fmt(c.peakI,0)} (год ${c.peakIY})`],[`Себестоимость полная, ${ru}`,fmt(full,isT?2:1)]]);
   let ref='';
   if(isT&&FIN){const cm=calc(Object.assign({},D,{fin:Object.assign({},D.fin,{base:'all'})}),s),rm=cm.rows[D.pIdx];
    ref=`<p class="mute" style="font-size:12px;margin:12px 0 2px"><b>Справка: схема модели тюльпанов</b> (проценты на все вложения нарастающим итогом, без погашения)</p>`+rl([['Проценты за горизонт, млн ₽',fmt(cm.totIntr,1)],['Накопленный баланс за горизонт, млн ₽',fmt(cm.cumBalEnd,1)],['Пик финансирования с процентами, млн ₽',`${fmt(cm.peakI,0)} (год ${cm.peakIY})`],[`IRR / NPV после процентов (${Math.round(s.r*100)}%)`,`${pct(cm.irrI)} / ${fmt(cm.npvI,1)}`],['Себестоимость полная, ₽/шт.',fmt((rm.opex+rm.dep+rm.intr)/D.ind.costDen,2)]])}
+  if(isT){const cm=calc(Object.assign({},D,{fin:Object.assign({},D.fin,{base:'all'})}),s),sm=(x,key)=>x.rows.reduce((a,r)=>a+r[key],0);
+   const opx=sm(c,'opex'),cap=sm(c,'capex'),rv=sm(c,'rev'),pk=x=>`${fmt(x,1)}`;
+   const R=[['Выручка за 8 сезонов',fmt(rv,1),fmt(rv,1),fmt(sm(cm,'rev'),1)],
+    ['OPEX: закупка луковиц + ФОТ',fmt(opx,1),fmt(opx,1),fmt(sm(cm,'opex'),1)],
+    ['Капзатраты',fmt(cap,1),fmt(cap,1),fmt(sm(cm,'capex'),1)],
+    ['Амортизация','—',fmt(c.totDep,1),fmt(cm.totDep,1)],
+    ['Проценты','—',fmt(c.totIntr,1),fmt(cm.totIntr,1)],
+    ['Затраты за 8 сезонов (без процентов: OPEX + капзатраты; с процентами: OPEX + амортизация + проценты)',fmt(opx+cap,1),fmt(opx+c.totDep+c.totIntr,1),fmt(opx+cm.totDep+cm.totIntr,1)],
+    ['EBITDA',fmt(rv-opx,1),fmt(rv-opx,1),fmt(sm(cm,'rev')-sm(cm,'opex'),1)],
+    ['Накопленный денежный поток (FCF)',fmt(c.cumEnd,1),fmt(c.cumCEnd,1),fmt(cm.cumCEnd,1)],
+    ['Накопленный баланс сезонов','—',fmt(c.cumBalEnd,1),fmt(cm.cumBalEnd,1)],
+    ['Пик финансирования',pk(c.peak),pk(c.peakI),pk(cm.peakI)],
+    ['NPV, при ставке 12% / в модели 15%',fmt(c.npv,1),fmt(c.npvI,1),'608,7 (15%)'],
+    ['IRR',pct(c.irr),pct(c.irrI),pct(c.irr)],
+    ['Себестоимость 1-го разбора, ₽/шт.',fmt(cost,2),fmt(fullCost(D,c),2),fmt(fullCost(D,cm),2)]];
+   const MD=['2 029,0','250,8','125,5','59,9','86,5','397,2','1 778,2','1 566,2','1 631,8','228,0','608,7 (15%)','67,1%','0,99'];
+   $('#rc').innerHTML='<thead><tr><th>Показатель, млн ₽</th><th>Страница, без процентов</th><th>Страница, с процентами</th><th>Модель: проценты на все вложения</th><th>Модель: на непогашенный долг</th></tr></thead><tbody>'+R.map((r,i)=>`<tr><td class="wrapc" style="text-align:left">${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td><td>${MD[i]}</td></tr>`).join('')+'</tbody>';
+   $('#rcn').textContent='«Страница, без процентов» — поток проекта (так считаются NPV, IRR и пик в таблице сравнения). «Страница, с процентами» — проценты на непогашенный долг по ставке '+Math.round(s.fr*100)+'%, как у яблок и винограда. Две правые колонки — ваша модель тюльпанов в двух режимах переключателя «Проценты считать» при базовых настройках: «на все вложения» (по умолчанию, проценты нарастающим итогом без погашения) и «на непогашенный долг». Колонка «Страница, с процентами» совпадает с режимом «на непогашенный долг»; колонка «на все вложения» пересчитывается по текущим настройкам страницы. NPV модели считается при 15% с 2026 годом как нулевым.'}
   $('#e'+k).innerHTML=rl(fr)+ref+`<p class="mute" style="font-size:12px;margin-top:6px">${D.finNote}</p>`}
  $('#i'+k).innerHTML=[
   [isT?'Валовый сбор, 2033':'Валовый сбор на плато',isT?fmt(ind.gross*s.yf,1)+' млн шт.':fmt(rL.vol,0)+' т/год',ind.grossSub(rL)],
@@ -521,10 +544,10 @@ function projLive(D){const k=D.key,s=ST[k],c=calc(D,s);
  const be=breakEvenPrice(D,{yf:s.yf,cf:s.cf,sf:s.sf,r:s.r});
  $('#n'+k).textContent=(D.key==='T'?'Ползунок объёма меняет только выручку, затраты остаются прежними; потери при размножении здесь не считаются — их влияние в таблице стресс-тестов справа. ':'')+`При заданных условиях цена безубыточности (NPV при ${rate}% = 0): ${be==null?'не достигается в расчётном диапазоне':fmt(D.priceBase*be,D.priceDigits)+' '+D.priceUnit+' против базовых '+D.priceTxt}. ${dif?'':'Сейчас показан базовый вариант из расчёта.'}`;
  barLine($('#c'+k),c.rows,D.color);
- let h=`<thead><tr><th>Год</th><th>${D.volLabel||'Сбор, т'}</th><th>Выручка</th><th>OPEX</th><th>EBITDA</th><th>Субсидии</th><th>CAPEX</th><th>FCF</th><th>Накопленный FCF</th>${FIN?'<th>Амортизация</th><th>Проценты</th><th>Баланс</th><th>Накопл. баланс</th>':''}</tr></thead><tbody>`;
- c.rows.forEach(r=>{h+=`<tr><td>${r.y}${D.y0?` (${D.y0+r.y-1})`:''}</td><td>${fmt(r.vol,D.volDigits||0)}</td><td>${fmt(r.rev,1)}</td><td>${fmt(r.opex,1)}</td><td class="${sg(r.ebitda)}">${fmt(r.ebitda,1)}</td><td>${fmt(r.sub,1)}</td><td>${fmt(r.capex,1)}</td><td class="${sg(r.fcf)}"><b>${fmt(r.fcf,1)}</b></td><td class="${sg(r.cum)}">${fmt(r.cum,1)}</td>${FIN?`<td>${fmt(r.dep,1)}</td><td>${fmt(r.intr,1)}</td><td class="${sg(r.bal)}">${fmt(r.bal,1)}</td><td class="${sg(r.cumBal)}">${fmt(r.cumBal,1)}</td>`:''}</tr>`});
+ let h=`<thead><tr><th>Год</th><th>${D.volLabel||'Сбор, т'}</th><th>Выручка</th><th>OPEX</th><th>EBITDA</th><th>Субсид.</th><th>CAPEX</th><th>FCF</th><th>Накопл. FCF</th>${FIN?'<th>Накопл. FCF после %</th><th>Аморт.</th><th>Процент.</th><th>Общие затраты</th><th>Баланс</th><th>Накопл. баланс</th>':''}</tr></thead><tbody>`;
+ c.rows.forEach(r=>{h+=`<tr><td>${r.y}${D.y0?` (${D.y0+r.y-1})`:''}</td><td>${fmt(r.vol,D.volDigits||0)}</td><td>${fmt(r.rev,1)}</td><td>${fmt(r.opex,1)}</td><td class="${sg(r.ebitda)}">${fmt(r.ebitda,1)}</td><td>${fmt(r.sub,1)}</td><td>${fmt(r.capex,1)}</td><td class="${sg(r.fcf)}"><b>${fmt(r.fcf,1)}</b></td><td class="${sg(r.cum)}">${fmt(r.cum,1)}</td>${FIN?`<td class="${sg(r.cumC)}">${fmt(r.cumC,1)}</td><td>${fmt(r.dep,1)}</td><td>${fmt(r.intr,1)}</td><td>${fmt(r.opex+r.dep+r.intr,1)}</td><td class="${sg(r.bal)}">${fmt(r.bal,1)}</td><td class="${sg(r.cumBal)}">${fmt(r.cumBal,1)}</td>`:''}</tr>`});
  const TT=key=>c.rows.reduce((a,r)=>a+r[key],0);
- h+=`</tbody><tfoot><tr><td>Итого</td><td>${fmt(TT('vol'),D.volDigits||0)}</td><td>${fmt(TT('rev'),1)}</td><td>${fmt(TT('opex'),1)}</td><td>${fmt(TT('ebitda'),1)}</td><td>${fmt(TT('sub'),1)}</td><td>${fmt(TT('capex'),1)}</td><td>${fmt(TT('fcf'),1)}</td><td>${fmt(c.cumEnd,1)}</td>${FIN?`<td>${fmt(TT('dep'),1)}</td><td>${fmt(TT('intr'),1)}</td><td>${fmt(TT('bal'),1)}</td><td>${fmt(c.cumBalEnd,1)}</td>`:''}</tr></tfoot>`;
+ h+=`</tbody><tfoot><tr><td>Итого</td><td>${fmt(TT('vol'),D.volDigits||0)}</td><td>${fmt(TT('rev'),1)}</td><td>${fmt(TT('opex'),1)}</td><td>${fmt(TT('ebitda'),1)}</td><td>${fmt(TT('sub'),1)}</td><td>${fmt(TT('capex'),1)}</td><td>${fmt(TT('fcf'),1)}</td><td>${fmt(c.cumEnd,1)}</td>${FIN?`<td>${fmt(c.cumCEnd,1)}</td><td>${fmt(TT('dep'),1)}</td><td>${fmt(TT('intr'),1)}</td><td>${fmt(TT('opex')+TT('dep')+TT('intr'),1)}</td><td>${fmt(TT('bal'),1)}</td><td>${fmt(c.cumBalEnd,1)}</td>`:''}</tr></tfoot>`;
  $('#t'+k).innerHTML=h}
 function mountProjects(){PR.forEach(D=>{$('#tab-'+D.key).innerHTML=projShell(D);projStatic(D);projLive(D)});
  document.addEventListener('input',e=>{const t=e.target;if(!t.dataset||!t.dataset.p)return;const k=t.dataset.k,p=t.dataset.p,v=+t.value;
